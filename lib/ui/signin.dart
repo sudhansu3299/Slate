@@ -1,20 +1,37 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:slate_test/ui/forgot_password.dart';
+import 'package:slate_test/ui/routes.dart';
 import 'screen_util.dart';
 import 'login_component.dart';
+import 'package:slate_test/home.dart';
+import 'sign_up.dart';
 
-class FormDemo extends StatefulWidget {
+
+
+class SignIn extends StatefulWidget {
   @override
-  _FormDemoState createState() => _FormDemoState();
+  _SignInState createState() => _SignInState();
 }
 
-class _FormDemoState extends State<FormDemo> {
+class _SignInState extends State<SignIn> {
+
+    ///TODO Cloud Messaging for Notifications
+    // final FirebaseMessaging _messaging =FirebaseMessaging();
+
+
+    String _email,_password;
 
     final _formKey = GlobalKey<FormState>();
+    var _key =new GlobalKey<ScaffoldState>();
 
     final Map<String, dynamic> formData={'email':null, 'password':null};
 
     final focusPassword = FocusNode();
+
+    // bool _autoValidate =false;
 
     bool _obscureText =true;
     void _toggle(){  // To toggle the visibility of password field
@@ -29,6 +46,7 @@ class _FormDemoState extends State<FormDemo> {
           child: Scaffold(
               body: Form(
                   key: _formKey,
+                  // autovalidate: _autoValidate, /// Of No USE...
                   child: Stack(
                       fit: StackFit.expand,
                       children: <Widget>[
@@ -50,6 +68,12 @@ class _FormDemoState extends State<FormDemo> {
                               //color: Colors.white,
 
                           ),
+
+                          /*Material(
+                            type: MaterialType.transparency,
+                            child: ListView(),
+                          ),*/
+
                           ListView(
                               children: <Widget>[
                                   Center(
@@ -81,7 +105,7 @@ class _FormDemoState extends State<FormDemo> {
                                               icon: Icon(Icons.mail_outline),
                                               labelText: 'Email',
                                               labelStyle: TextStyle(
-                                                  fontWeight: FontWeight.bold, fontSize: 25.0),
+                                                  fontWeight: FontWeight.bold, fontSize: 22.0),
                                               hintText: 'type your email-id',
                                               hintStyle: TextStyle(fontStyle: FontStyle.italic,
                                                   fontSize: 13.0,
@@ -90,13 +114,16 @@ class _FormDemoState extends State<FormDemo> {
                                         validator: (String value){
                                               if (!RegExp(
                                                   r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
-                                                  .hasMatch(value))
+                                                  .hasMatch(value)){
                                                   return "This is not a valid email";
+                                              }
+
 
                                         },
 
                                         onSaved: (String value){
                                               formData['email']=value;
+                                              _email=value;
                                         },
 
                                         textInputAction: TextInputAction.next, // will show next instead of return button in keyboard
@@ -145,19 +172,19 @@ class _FormDemoState extends State<FormDemo> {
                                                         ),
                                                         labelText: 'Password',
                                                         labelStyle: TextStyle(
-                                                            fontWeight: FontWeight.bold, fontSize: 25.0),
+                                                            fontWeight: FontWeight.bold, fontSize: 22.0),
                                                         hintText: 'type your password',
                                                         hintStyle: TextStyle(fontStyle: FontStyle.italic,
                                                             fontSize: 13.0,
                                                             color: Colors.grey),
                                                     ),
-                                                    validator: (String value){
-                                                        if(value.isEmpty)
-                                                            return "Not valid";
-                                                    },
+                                                    validator: (String value)=>
+                                                        (value.isEmpty) ? "Not valid":null
+                                                    ,
 
                                                     onSaved:(String value){
                                                         formData['password']=value;
+                                                        _password= value;
                                                     },
 
                                                     focusNode: focusPassword, //focusPassword is just a global instance of FocusNode and it refers t o the password field
@@ -188,10 +215,53 @@ class _FormDemoState extends State<FormDemo> {
                                           ),
                                       ),
                                    // Container 3
+                                  Container(
+                                      height: Constant.sizeMedium,
+                                  ),
 
+                                  Padding(
+                                      padding: EdgeInsets.only(left: Constant.screenWidthFourth),
+                                    child: Row(
+                                      children: <Widget>[
+                                          Text('New to Slate?',
+                                                    style: TextStyle(
+                                                        color: Colors.black, fontSize: 16.0,
+                                                    ),
+                                                ),
+
+                                             InkWell(
+                                              child: Text('Sign Up Now!',
+                                              style: TextStyle(
+                                                  color: Colors.blueAccent, fontSize: 16.0,decoration: TextDecoration.underline
+                                                  ),
+                                              ),
+                                                 onTap: (){
+                                                     Navigator.push(context, MaterialPageRoute(builder: (context)=> SignUp()));
+                                                     // AppRoutes.push(context,MaterialPageRoute(builder: (context)=>HomePage()));
+                                                 },
+                                            ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                      height: Constant.sizeMedium,
+                                  ),
+                                  Center(
+                                    child: InkWell(
+                                        child: Text('Forgot password?',
+                                            style: TextStyle(
+                                                color: Colors.black, fontSize: 16.0,decoration: TextDecoration.underline
+                                            ),
+                                        ),
+                                        onTap: (){
+                                            Navigator.push(context, MaterialPageRoute(builder: (context)=> ForgotPassword()));
+                                            // AppRoutes.push(context,MaterialPageRoute(builder: (context)=>HomePage()));
+                                        },
+                                    ),
+                                  ),
 
                               ],
-                          )
+                          ),
                       ],
                   ),
               )
@@ -199,12 +269,27 @@ class _FormDemoState extends State<FormDemo> {
         );
     }
 
-    Widget _submitForm(){
+    Future<void> _submitForm() async{
         print('Submitting Form');
         if(_formKey.currentState.validate()){
             _formKey.currentState.save();  // onSaved is called
             print('Form is validated!');
             print(formData);
+            try{
+                AuthResult result =await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email, password: _password);
+                FirebaseUser user= result.user;
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>HomePage(_email)));
+
+
+            }catch(e){
+                print(e.message);
+                final snackbar=SnackBar(content: Text('wrong password',
+                    style: TextStyle(color: Colors.red),
+                ),
+                    duration: Duration(milliseconds: 1000),
+                );
+                _key.currentState.showSnackBar(snackbar);
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'forms.dart';
+import 'signin.dart';
 import 'logo_widget.dart';
 import 'screen_util.dart';
 import 'login_component.dart';
@@ -17,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // TODO: implement initState
         super.initState();
         Future.delayed(Duration(milliseconds: 2000), () {
-            AppRoutes.makeFirst(context, FormDemo());
+            AppRoutes.makeFirst(context, SignIn());
         });
   }
 
