@@ -1,8 +1,12 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:slate_test/drawer_pages/bookmarks.dart';
+import 'package:slate_test/drawer_pages/contact_us.dart';
 import 'package:slate_test/ui/routes.dart';
 import 'package:slate_test/ui/screen_util.dart';
+import 'package:slate_test/ui/signin.dart';
 import 'package:slate_test/ui/test.dart';
 
 import 'package:slate_test/drawer_pages/my_profile.dart';
@@ -10,22 +14,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:path/path.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
-/*class RouteGenerator {
-    static Route<dynamic> generateRoute(RouteSettings settings) {
-        switch (settings.name) {
-            case '/myprofile':
-                return   MaterialPageRoute(builder: (_) => MyProfile());
-                break;
-            default:
-                return MaterialPageRoute(builder: (__)=>MyProfile());
-        }
-    }
-}
-
-    const String my_profile =MyProfile.routeName;
-
-*/
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:slate_test/drawer_pages/feed_back.dart';
 
 class HomePage extends StatefulWidget {
 
@@ -37,6 +27,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+    bool loggedIn=false;
+
     File image;
     final cropKey = GlobalKey<CropState>();
 
@@ -66,7 +59,7 @@ class _HomePageState extends State<HomePage> {
                 children: <Widget>[
                     UserAccountsDrawerHeader(
                         accountEmail: Text(widget._email),
-                        accountName: Text('Hello User'),
+                        accountName: Text('Hello'),
                         currentAccountPicture: GestureDetector(
                             onTap: (){
                                 if(image==null){
@@ -110,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                         ),
 
                         onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>MyProfile()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>BookMarks()));
                         }
 
                     ),
@@ -124,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                         ),
 
                         onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>MyProfile()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>FeedBack()));
                         }
 
                     ),
@@ -138,7 +131,23 @@ class _HomePageState extends State<HomePage> {
                         ),
 
                         onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>MyProfile()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>ContactUs()));
+                        }
+
+                    ),
+
+                    ListTile(
+                        title: Row(
+                            children: <Widget>[
+                                Icon(Icons.lock),
+                                Padding(padding: EdgeInsets.only(left:Constant.screenWidthTenth)),
+                                Text('Sign out',style: TextStyle(fontSize: 20.0),),
+                            ],
+                        ),
+
+                        onTap: (){
+                            _signOut();
+                            //Navigator.push(context, MaterialPageRoute(builder: (context)=>MyProfile()));
                         }
 
                     ),
@@ -209,6 +218,10 @@ class _HomePageState extends State<HomePage> {
         )
          ,
     );
+
+    /*Scaffold loginScaffold =new Scaffold(
+        appBar: new AppBar(title:Text('Login')),
+    );*/
   }
 
   Widget _createDrawerItem({IconData icon, String text,GestureTapCallback onTap}){ // Unused.
@@ -221,6 +234,29 @@ class _HomePageState extends State<HomePage> {
               ],
           ),
             onTap: onTap
+        );
+  }
+
+  final FirebaseAuth firebaseAuth= FirebaseAuth.instance;
+
+  /*Future<Null> _function() async{
+      SharedPreferences prefs;
+      prefs= await SharedPreferences.getInstance();
+      this.setState((){
+         if(prefs.getString("username")!=null){
+             loggedIn= true;
+         }else{
+             loggedIn= false;
+         }
+      });
+  }*/
+
+  void _signOut() async{
+        await firebaseAuth.signOut();
+        runApp(
+          new MaterialApp(
+              home: new SignIn(),
+          )
         );
   }
 }

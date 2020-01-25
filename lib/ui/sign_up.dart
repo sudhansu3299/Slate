@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:slate_test/home.dart';
 import 'package:slate_test/ui/login_component.dart';
+import 'package:slate_test/ui/sign_up_student.dart';
+import 'package:slate_test/ui/sign_up_tutor.dart';
 import 'package:slate_test/ui/signin.dart';
 import 'logo_widget.dart';
 import 'screen_util.dart';
@@ -15,7 +17,8 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
 
-    String _email,_password;
+    String _email,_password,_contactno;
+    bool status=false;
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     var _key = new GlobalKey<ScaffoldState>();
 
@@ -75,11 +78,52 @@ class _SignUpState extends State<SignUp> {
                                   onSaved: (value)=> _password=value,
                               ),
                           ),
+                          Container(
+                              height: Constant.sizeMedium,
+                          ),
+                          Padding(
+                              padding:  EdgeInsets.only(left:Constant.screenWidthTenth, right: Constant.screenWidthTenth),
+                              child: TextFormField(
+                                  inputFormatters: [LengthLimitingTextInputFormatter(10)],
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                      labelText: 'Contact No',
+                                  ),
+                                  validator: (value){
+                                      if(value.length!=10){
+                                          return 'Contact number must be of 10 characters';
+                                      }
+                                  },
+                                  onSaved: (value)=> _contactno=value,
+                              ),
+                          ),
+                          Container(
+                              height: Constant.sizeMedium,
+                          ),
+                          Align(
+                             alignment: Alignment.center,
+                            child: Row(
+                              children: <Widget>[
+                                  Text('Student'),
+                                Switch(
+                                    activeColor: Colors.blue,
+                                    value: status,
+                                    onChanged: (value){
+                                        print("Value : $value");
+                                        setState(() {
+                                          status=value;
+                                        });
+                                    },
+                                ),
+                                  Text('Tutor')
+                              ],
+                            ),
+                          ),
                           RaisedButton(
                               onPressed: (){
                                   signUp();
                               },
-                              child: Text('Sign Up!'),
+                              child: Text('Proceed'),
                           ),
 
                       ],
@@ -97,17 +141,18 @@ class _SignUpState extends State<SignUp> {
           try{
               AuthResult result =await FirebaseAuth.instance.createUserWithEmailAndPassword(email: _email, password: _password);
               FirebaseUser user= result.user;
-              //await FirebaseAuth.instance.sendPasswordResetEmail(email: _email);
+              await FirebaseAuth.instance.sendPasswordResetEmail(email: _email);
+              // status?SignUpTutor():SignUpStudent();
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>SignIn()));
 
           } catch(e){
-                print(e.message);
+                print(e.toString());
                 final snackbar =SnackBar(content: Text('Something is wrong',
                     style: TextStyle(color: Colors.red),
                 ),
                     duration: Duration(milliseconds: 1000),
                 );
-                _key.currentState.showSnackBar(snackbar);
+                Scaffold.of(context).showSnackBar(snackbar);
           }
 
       }

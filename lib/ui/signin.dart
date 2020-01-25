@@ -18,13 +18,16 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
 
+
     ///TODO Cloud Messaging for Notifications
     // final FirebaseMessaging _messaging =FirebaseMessaging();
 
 
     String _email,_password;
+    bool isLoading =false;
 
     final _formKey = GlobalKey<FormState>();
+    final GlobalKey<ScaffoldState> _scaffoldkey= new GlobalKey<ScaffoldState>();
     var _key =new GlobalKey<ScaffoldState>();
 
     final Map<String, dynamic> formData={'email':null, 'password':null};
@@ -44,6 +47,7 @@ class _SignInState extends State<SignIn> {
     Widget build(BuildContext context) {
         return SafeArea(
           child: Scaffold(
+              key: _scaffoldkey,
               body: Form(
                   key: _formKey,
                   // autovalidate: _autoValidate, /// Of No USE...
@@ -203,6 +207,15 @@ class _SignInState extends State<SignIn> {
                                       Center(
                                           child: RaisedButton(
                                               onPressed: () {
+                                                  _scaffoldkey.currentState.showSnackBar(
+                                                      new SnackBar( content:
+                                                      new Row(
+                                                          children: <Widget>[
+                                                              new CircularProgressIndicator(),
+                                                              new Text("  Signing-In...")
+                                                          ],
+                                                      ),
+                                                      ));
                                                   _submitForm();
                                               },
 
@@ -279,7 +292,8 @@ class _SignInState extends State<SignIn> {
                 AuthResult result =await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email, password: _password);
                 FirebaseUser user= result.user;
                 Navigator.push(context, MaterialPageRoute(builder: (context)=>HomePage(_email)));
-
+                // HomePage(_email)
+                //return CircularProgressIndicator();
 
             }catch(e){
                 print(e.message);
@@ -288,7 +302,7 @@ class _SignInState extends State<SignIn> {
                 ),
                     duration: Duration(milliseconds: 1000),
                 );
-                _key.currentState.showSnackBar(snackbar);
+                Scaffold.of(context).showSnackBar(snackbar);
             }
         }
     }
